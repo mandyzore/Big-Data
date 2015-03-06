@@ -24,10 +24,12 @@ Every non-leaf node in the trie tree is a char of BASE32, and every leaf node co
 In this core step, the program firstly locate the geo hash index on the trie tree. Secondly, return the users list store in the trie tree leaf node, which are geo neihgbors of the input query. Then visit every user in this list and calculate the similar score between them and the input query . Finally, use heap sort method to sort the scores and return the top10 similar users;
 
 ##Note:
-total number of the faking users: 10,000,000 
-generation time: around 10s
-search time: within 1s
-required memory: at least 
-my experiment environment: Ubuntu 14.04, Memory=8G
+
+Total number of the faking users: 10,000,000.		
+Generation time: around 10s.		
+Search time: within 0.1s.		
+Required memory: at least  1G.		
+
+my experiment environment: Ubuntu 14.04 LTS, Memory 8G, Disk 10G, OS type 64-bit
 
 There are still lots of work could be improved in data structure , such using hashmap instead vector for the trie tree , which could reduce the data generation time and increase the flexibility of more levels of the geo index trie tree.

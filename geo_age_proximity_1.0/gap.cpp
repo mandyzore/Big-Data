@@ -4,7 +4,6 @@
 #include <ctime>
 #include <cstdlib>
 #include <cstring>
-#include <map>
 
 #include <cmath>
 #include <vector>
@@ -30,27 +29,27 @@ typedef struct UserStruct {
 	double lat;
 	double lon;
 	string name;
-	char gh[6];
+	char gh[2];
 	int age;
 } User;
 
 //------------------------------------------------------Trie
 class Node { 
 	private: char mContent;//0-z
-	bool mMarker;//leaf?
+	//bool mMarker;//leaf?
 	vector<Node*> mChildren; //chirld node list.size()<= 32
 	vector<User*> users;//leaf: neighbor user list 
 	public: Node() 
 	{ 
 		mContent = ' '; 
-		mMarker = false; 
+		//mMarker = false; 
 	}
 	
 	~Node(){}
 	char content() { return mContent; } 
 	void setContent(char c) { mContent = c; } 
-	bool wordMarker() { return mMarker; } 
-	void setWordMarker() { mMarker = true; } 
+	//bool wordMarker() { return mMarker; } 
+	//void setWordMarker() { mMarker = true; } 
 	Node* findChild(char c); 
 	void appendChild(Node* child) {
 		mChildren.push_back(child); 
@@ -102,7 +101,7 @@ void Trie::addUser(User *user){
 		}
 		if ( i == geohash.size() - 1 ){//leaf
 	 		current-> appendUser(user);
-			current->setWordMarker();
+			//current->setWordMarker();
 			return;
 	 	}
 	}
@@ -119,10 +118,13 @@ vector<User*> Trie::searchUserPrefix(string s)
 				return current->getUsers(); 
 			current = tmp; 
 		} 
-	if ( current->wordMarker() ) 
+	//if ( current->wordMarker() ) 
 		return current->getUsers();  
-	} 
-} 
+	}
+	return current->getUsers(); 
+}
+
+
 //------------------------------------------------------Geo:Hash
 static void encode_geohash(double latitude, double longitude, int precision, char *geohash) 
 {  
@@ -292,22 +294,27 @@ int main()
 	double lat,lon;
 	int nameID,age;
 	string n;
-	
+	User* u;
 	Trie* trie = new Trie(); 
 	while(userID<numOfUser){
-		User* u=new User();
+		u=new User();
 		u->id=userID;
 		//----2.1 latitude [-90,90]
-		u->lat = (double) rand()/RAND_MAX * (MAX_LAT-MIN_LAT) + MIN_LAT;
+		lat = (double) rand()/RAND_MAX * (MAX_LAT-MIN_LAT) + MIN_LAT;
 		//----2.2 longitude [-180,180]
-		u->lon = (double) rand()/RAND_MAX * (MAX_LON-MIN_LON) + MIN_LON;
+		lon = (double) rand()/RAND_MAX * (MAX_LON-MIN_LON) + MIN_LON;
 		//----2.3 age: [1,100]
-		u->age = (double) rand()/RAND_MAX * (MAX_AGE-MIN_AGE) + MIN_AGE;
+		age = (double) rand()/RAND_MAX * (MAX_AGE-MIN_AGE) + MIN_AGE;
 		//----2.4 name [0,21985] the num of simple names in name.txt
 		nameID =(double)rand()/RAND_MAX * (numOfName-1);
+		
+		encode_geohash(lat,lon,2, u->gh);
 		u->name = names[nameID];
-		encode_geohash(u->lat,u->lon,2, u->gh);
+		u->lat=lat;
+		u->lon=lon;
+		u->age=age;
 		trie->addUser(u);
+		
 		userID+=1;
 	}
 	end=clock();
@@ -334,7 +341,7 @@ int main()
 	user->age=Qage;
 	user->lat=Qlat;
 	user->lon=Qlon;
-	encode_geohash(user->lat,user->lon,2, user->gh);// two levels deep Trie
+	encode_geohash(Qlat,Qlon,2, user->gh);// two levels deep Trie
 	
 	start=clock();
 	vector<User*> nb;
@@ -348,7 +355,7 @@ int main()
 	//----2.1 top10 similar search 
 	vector<User*> top10=getTopNSimilar(10,user,nb);
 	for(int i=0;i<10;i++){
-		cout<<"top"<<i<<": location=("<< top10[i]->lat <<","<<top10[i]->lon <<"), age="<<top10[i]->age<<", name="<<top10[i]->name<<endl;
+		cout<<"top"<<i<<": location=("<< top10[i]->lat <<","<<top10[i]->lon <<"), age="<<top10[i]->age<<", name="<<top10[i]->name<<", userId="<<top10[i]->id<<endl;
 	}
 	
 	cout<<endl;
